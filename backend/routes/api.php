@@ -37,16 +37,17 @@ Route::post('/staff-register', [StaffRegistrationController::class, 'register'])
 
 use App\Http\Controllers\NoticeController;
 
-Route::post('/notices', [NoticeController::class, 'store']);
+Route::post('/notices', [NoticeController::class, 'store'])->middleware('token.auth');
 
 use App\Http\Controllers\ChangePasswordController;
 
-Route::post('/change-password', [ChangePasswordController::class, 'update']);
+Route::post('/change-password', [ChangePasswordController::class, 'update'])->middleware('token.auth');
 
 use App\Http\Controllers\StaffHomeController;
 
 Route::middleware('token.auth')->group(function () {
     Route::get('/staff/home/notices', [StaffHomeController::class, 'getNotices']);
+    Route::get('/departments-batches', [StaffHomeController::class, 'getDepartmentsBatches']);
     Route::post('/staff/home/notice/delete', [StaffHomeController::class, 'deleteNotice']);
     Route::post('/staff/home/notice/update', [StaffHomeController::class, 'updateNotice']);
 });
@@ -63,6 +64,7 @@ use App\Http\Controllers\StudentHomeController;
 
 Route::middleware(['token.auth'])->group(function () {
     Route::get('/student/home/profile', [StudentHomeController::class, 'getProfile']);
+    Route::get('/student/notices', [StudentHomeController::class, 'getNotices']);
     Route::post('/student/home/profile/picture', [StudentHomeController::class, 'updateProfilePicture']);
 });
 

@@ -69,11 +69,12 @@ export class StaffHome implements OnInit {
   
   editNotice(notice: any) {
     this.editingNotice = { ...notice };
-    this.loadDepartmentsAndBatches();
+    // Pass existing selected ids so checkboxes are pre-checked
+    this.loadDepartmentsAndBatches(this.editingNotice.departments || [], this.editingNotice.batches || []);
     this.showEditModal = true;
   }
 
-  loadDepartmentsAndBatches() {
+  loadDepartmentsAndBatches(selectedDeptIds: number[] = [], selectedBatchIds: number[] = []) {
     const token = localStorage.getItem('token');
     if (!token) return;
 
@@ -81,8 +82,9 @@ export class StaffHome implements OnInit {
       headers: { 'Authorization': `Bearer ${token}` }
     }).subscribe(response => {
       if (response.success) {
-        this.departments = response.departments;
-        this.batches = response.batches;
+        // mark selected flags
+        this.departments = response.departments.map((d: any) => ({ ...d, selected: selectedDeptIds.includes(d.id) }));
+        this.batches = response.batches.map((b: any) => ({ ...b, selected: selectedBatchIds.includes(b.id) }));
       }
     });
   }
@@ -91,7 +93,15 @@ export class StaffHome implements OnInit {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    this.http.post<any>('http://127.0.0.1:8000/api/staff/home/notice/update', this.editingNotice, {
+    const payload: any = {
+      noticeId: this.editingNotice.noticeId,
+      title: this.editingNotice.title,
+      description: this.editingNotice.description,
+      departments: this.departments.filter(d => d.selected).map(d => d.id),
+      batches: this.batches.filter(b => b.selected).map(b => b.id),
+    };
+
+    this.http.post<any>('http://127.0.0.1:8000/api/staff/home/notice/update', payload, {
       headers: { 'Authorization': `Bearer ${token}` }
     }).subscribe(response => {
       if (response.success) {
@@ -101,6 +111,9 @@ export class StaffHome implements OnInit {
       } else {
         alert(response.message);
       }
+    }, err => {
+      console.error('Update failed:', err);
+      alert('Failed to update notice.');
     });
   }
 

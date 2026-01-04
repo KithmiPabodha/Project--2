@@ -18,16 +18,16 @@
                 <div class="form-container">
             
                     <h1>Add New Notice</h1>
-                    <form id="noticeForm">
+                    <form id="noticeForm" (ngSubmit)="onSubmit()" #noticeForm="ngForm">
 
                     <div class="form-group">
                         <label for="noticeTitle">Notice Title*</label>
-                        <input type="text" id="noticeTitle" name="noticeTitle" required>
+                        <input type="text" id="noticeTitle" name="noticeTitle" required [(ngModel)]="noticeTitle">
                     </div>
             
                     <div class="form-group">
                         <label for="description">Description*</label>
-                        <textarea id="description" name="description" rows="10" required></textarea>
+                        <textarea id="description" name="description" rows="10" required [(ngModel)]="description"></textarea>
                     </div>
         
                     <div class="selection">
@@ -54,7 +54,7 @@
                     </div>
             
                     <div class="form-actions">
-                         <button type="submit" class="submit-btn">Submit Notice</button>
+                         <button type="submit" class="submit-btn" [disabled]="!noticeForm.form.valid">Submit Notice</button>
                     </div>
                     </form>
                 </div>
@@ -68,22 +68,3 @@
             </div>
         </footer>
 
-        <script>
-          
-            const noticeForm = document.getElementById('noticeForm');
-
-           
-            noticeForm.addEventListener('submit', function(event) {
-               
-                event.preventDefault();
-
-               
-
-         
-                console.log('Form submitted!'); 
-
-               
-                    window.location.href = 'staff_home.html';
-              
-            });
-        </script>

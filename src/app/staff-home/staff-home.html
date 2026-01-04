@@ -22,7 +22,16 @@
     <h2 class="heading">Your notices</h2>
     <ul>
       <li *ngFor="let notice of notices">
-        <i>{{ notice.date }} :</i> {{ notice.text }}
+        <i>{{ notice.formattedDate || notice.date }} :</i>
+        <div class="notice-content">
+          <strong>{{ notice.title || notice.text }}</strong>
+          <p>{{ notice.description || '' }}</p>
+
+          <div *ngIf="notice.attachmentUrl" class="attachment">
+            <a [href]="notice.attachmentUrl" target="_blank">View attachment</a>
+          
+          </div>
+        </div>
         <button (click)="editNotice(notice)">Edit</button>
         <button (click)="deleteNotice(notice)">Delete</button>
       </li>

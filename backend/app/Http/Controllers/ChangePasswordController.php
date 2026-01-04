@@ -5,32 +5,29 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session;
 
 class ChangePasswordController extends Controller
 {
     public function update(Request $request)
     {
-        // Check if user is logged in
-        $userType = $request->session()->get('user_type');
-        $userId = null;
+        // Use token-authenticated user info injected by TokenAuthentication middleware
+        $userType = $request->get('user_type');
+        $userId = $request->get('user_id');
 
-        if (!$request->session()->get('logged_in') || !$userType) {
+        if (!$userType || !$userId) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized access. Please login first.'
-            ], 403);
+            ], 401);
         }
 
         // Determine table and id column
         if ($userType === 'student') {
             $table = 'students';
             $idColumn = 'studentId';
-            $userId = $request->session()->get('studentId');
         } elseif ($userType === 'staff') {
             $table = 'staff';
             $idColumn = 'staffId';
-            $userId = $request->session()->get('staffId');
         } else {
             return response()->json([
                 'success' => false,

@@ -2,12 +2,13 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule} from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 
 
 @Component({
   selector: 'app-add-notice',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule],
+  imports: [CommonModule, FormsModule, HttpClientModule, RouterModule],
   templateUrl: './add-notice.html',
   styleUrls: ['./add-notice.css']
 })
@@ -18,7 +19,7 @@ export class AddNotice {
   batches: string[] = [];
   attachment: File | null = null;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private router: Router) {}
 
   onFileChange(event: any) {
     this.attachment = event.target.files[0];
@@ -30,6 +31,13 @@ export class AddNotice {
       return;
     }
 
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('You are not logged in. Please login first.');
+      this.router.navigate(['/login']);
+      return;
+    }
+
     const formData = new FormData();
     formData.append('noticeTitle', this.noticeTitle);
     formData.append('description', this.description);
@@ -37,14 +45,23 @@ export class AddNotice {
     this.batches.forEach(batch => formData.append('batches[]', batch));
     if (this.attachment) formData.append('attachment', this.attachment);
 
-    this.http.post('http://127.0.0.1:8000/api/notices', formData)
+    this.http.post('http://127.0.0.1:8000/api/notices', formData, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
       .subscribe({
         next: (res: any) => {
           alert(res.message || 'Notice added successfully!');
-          // Optionally navigate to staff home
-          // this.router.navigate(['/staff-home']);
+          this.router.navigate(['/staff-home']);
         },
-        error: err => alert(err.error?.error || 'Failed to submit notice.')
+        error: err => {
+          console.error('Submit notice error:', err);
+          if (err.status === 401 || err.status === 403) {
+            alert('Session expired or unauthorized. Please login again.');
+            this.router.navigate(['/login']);
+          } else {
+            alert(err.error?.error || 'Failed to submit notice.');
+          }
+        }
       });
   }
 

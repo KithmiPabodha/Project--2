@@ -24,7 +24,17 @@
     <div>
       <ul>
         <li *ngFor="let notice of notices">
-          <i>{{ notice.date }} :</i> {{ notice.text }}
+          <i>{{ notice.formattedDate || notice.date }} :</i>
+          <div class="notice-content">
+            <strong>{{ notice.title || notice.text }}</strong>
+            <p>{{ notice.description || '' }}</p>
+
+            <div *ngIf="notice.attachmentUrl" class="attachment">
+              <a [href]="notice.attachmentUrl" target="_blank" [attr.download]="notice.attachmentName">
+                {{ notice.attachmentName || 'Download attachment' }}
+              </a>
+            </div>
+          </div>
         </li>
       </ul>
     </div>

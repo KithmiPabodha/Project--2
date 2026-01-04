@@ -49,7 +49,7 @@ class StudentRegistrationController extends Controller
             ]);
 
         if ($updated) {
-            return response()->json(['message' => 'Registration successful', 'redirect' => '/student-home']);
+            return response()->json(['message' => 'Registration successful', 'redirect' => '/login']);
         } else {
             return response()->json(['message' => 'Error updating student'], 500);
         }

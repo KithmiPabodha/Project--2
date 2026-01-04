@@ -11,10 +11,12 @@ class NoticeController extends Controller
 {
     public function store(Request $request)
     {
-        // Check if staff is logged in
-        $staffId = $request->session()->get('staffId');
-        if (!$staffId) {
-            return response()->json(['error' => 'Not logged in'], 403);
+        // Use token-authenticated user info injected by TokenAuthentication middleware
+        $staffId = $request->get('user_id');
+        $userType = $request->get('user_type');
+
+        if ($userType !== 'staff' || !$staffId) {
+            return response()->json(['error' => 'Unauthorized - staff access required'], 401);
         }
 
         // Validate request

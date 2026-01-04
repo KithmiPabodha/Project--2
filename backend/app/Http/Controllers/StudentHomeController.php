@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class StudentHomeController extends Controller
 {
@@ -119,5 +120,49 @@ class StudentHomeController extends Controller
             'success' => false,
             'message' => 'Failed to update profile picture in database'
         ]);
+    }
+
+    /**
+     * Return notices relevant for the logged-in student based on their department and batch
+     */
+    public function getNotices(Request $request)
+    {
+        if (!$request->user_id || $request->user_type !== 'student') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized access. Please login first.'
+            ], 401);
+        }
+
+        $studentId = $request->user_id;
+
+        $student = DB::table('students')->where('studentId', $studentId)->first();
+        if (!$student) {
+            return response()->json(['success' => false, 'message' => 'Student not found'], 404);
+        }
+
+        $deptId = $student->departmentId;
+        $batchId = $student->batchId;
+
+        // Get notices that are targeted to the student's department or batch
+        $notices = DB::table('notice as n')
+            ->leftJoin('notice_departments as nd', 'n.noticeId', '=', 'nd.noticeId')
+            ->leftJoin('notice_batches as nb', 'n.noticeId', '=', 'nb.noticeId')
+            ->where(function ($q) use ($deptId, $batchId) {
+                $q->where('nd.departmentId', $deptId)
+                  ->orWhere('nb.batchId', $batchId);
+            })
+            ->select('n.*')
+            ->distinct()
+            ->orderBy('n.date', 'desc')
+            ->get()
+            ->map(function ($notice) {
+                $notice->formattedDate = date('d-M-Y', strtotime($notice->date));
+                $notice->attachmentUrl = $notice->attachment ? Storage::url($notice->attachment) : null;
+                $notice->attachmentName = $notice->attachment_name ?? ($notice->attachment ? basename($notice->attachment) : null);
+                return $notice;
+            });
+
+        return response()->json(['success' => true, 'notices' => $notices]);
     }
 }

@@ -10,6 +10,7 @@ class StaffRegistrationController extends Controller
 {
     public function register(Request $request)
     {
+        // Get staffId from request
         $staffId = $request->input('staffId');
 
         if (!$staffId) {
@@ -42,7 +43,7 @@ class StaffRegistrationController extends Controller
             ]);
 
         if ($updated) {
-            return response()->json(['message' => 'Registration successful', 'redirect' => '/staff-home']);
+            return response()->json(['message' => 'Registration successful', 'redirect' => '/login']);
         } else {
             return response()->json(['message' => 'Error updating staff'], 500);
         }
